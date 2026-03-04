@@ -39,9 +39,13 @@ header {
 }
 
 /* CUANDO EL MOUSE SE ACERCA AL TECHO DE LA PANTALLA */
+header:hover {
+    margin-top: 0px;
+}
 
-
-
+header:hover .menu-superior {
+    opacity: 1;
+}
 .menu-superior a {
     color: white;
     text-decoration: none;
