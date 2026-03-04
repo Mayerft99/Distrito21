@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Accesorios - Distrito 21</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="menu-superior">
+        <a href="../index.html">Inicio</a>
+        <a href="#">Acerca de</a>
+        <a href="#">Servicios</a>
+        <a href="#">Contacto</a>
+    </nav>
+</header>
+
+<div class="contenedor">
+
+    <aside class="menu-lateral">
+        <div class="overlay">
+            <h3>Categorías</h3>
+            <a href="../poleras/poleras.html">Poleras</a>
+            <a href="../pantalones/pantalones.html">Pantalones</a>
+            <a href="../ropa interior/ropainterior.html">Ropa interior</a>
+            <a href="accesorios.html">Accesorios</a>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <div class="bloque-titulo">
+        <h1 class="titulo-principal">Sección de Accesorios</h1>
+        </div>
+
+        <section class="producto-card">
+
+            <div class="imagen-contenedor">
+            <img src="gorra jerry.png" alt="Accesorios">
+            </div>
+
+            <div class="info-producto">
+                <h2>Gorra Tom & Jerry</h2>
+
+                <p class="descripcion">
+                El complemento perfecto para tu outfit. La gorra Jerry en color beige combina con todo y aporta un estilo limpio y moderno. Diseño estructurado, ajuste cómodo y acabado premium que eleva cualquier look casual o urbano.
+                <br>
+                ✔ Color beige combinable<br>
+                ✔ Ajuste cómodo<br>
+                ✔ Estilo urbano minimalista<br>
+                </p>
+
+                <p class="precio">Bs. 90</p>
+
+                <button class="boton-comprar">
+                    🛒 Comprar Ahora
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const imagenes = [
+        "../media/fondo1.jpg",
+        "../media/fondo2.jpg",
+        "../media/fondo3.jpg",
+        "../media/fondo4.jpg"
+    ];
+
+    const imagenAleatoria = imagenes[Math.floor(Math.random() * imagenes.length)];
+
+    document.body.style.backgroundImage = 
+        `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${imagenAleatoria})`;
+
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+});
+</script>
+
+</body>
+</html>

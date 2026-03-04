@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pantalones - Distrito 21</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="menu-superior">
+        <a href="../index.html">Inicio</a>
+        <a href="#">Acerca de</a>
+        <a href="#">Servicios</a>
+        <a href="#">Contacto</a>
+    </nav>
+</header>
+
+<div class="contenedor">
+
+    <aside class="menu-lateral">
+        <div class="overlay">
+            <h3>Categorías</h3>
+            <a href="../poleras/poleras.html">Poleras</a>
+            <a href="pantalones.html">Pantalones</a>
+            <a href="../ropa interior/ropainterior.html">Ropa interior</a>
+            <a href="../accesorios/accesorios.html">Accesorios</a>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <div class="bloque-titulo">
+        <h1 class="titulo-principal">Sección de Pantalones</h1>
+        </div>
+
+        <section class="producto-card">
+
+            <div class="imagen-contenedor">
+            <img src="pantalonbaggy.png" alt="Pantalón baggy">
+            </div>
+
+            <div class="info-producto">
+                <h2>Pantalón Baggy</h2>
+
+                <p class="descripcion">
+                Comodidad y estilo en una sola prenda. Nuestro pantalón baggy ofrece un corte amplio y relajado que brinda libertad de movimiento y un look auténtico inspirado en el streetwear. Ideal para el día a día o para crear outfits urbanos con personalidad.
+
+                Diseñado con materiales resistentes y de alta calidad, garantiza durabilidad sin perder confort. Combínalo con poleras oversize, hoodies o zapatillas para un estilo moderno y con actitud.
+                <br>
+                ✔ Corte amplio y relajado<br>
+                ✔ Tela resistente y cómoda<br>
+                ✔ Estilo urbano en tendencia<br>
+                ✔ Fácil de combinar<br>
+                </p>
+
+                <p class="precio">Bs. 180</p>
+
+                <div class="menu-desplegable">
+                    <button class="boton-desplegable">
+                        Seleccionar Talla
+                    </button>
+
+                    <div class="contenido-desplegable">
+                        <a href="#">S</a>
+                        <a href="#">M</a>
+                        <a href="#">L</a>
+                        <a href="#">XL</a>
+                        <a href="#">XXL</a>
+                    </div>
+                </div>
+
+                <button class="boton-comprar">
+                    🛒 Comprar Ahora
+                </button>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const imagenes = [
+        "../media/fondo1.jpg",
+        "../media/fondo2.jpg",
+        "../media/fondo3.jpg",
+        "../media/fondo4.jpg"
+    ];
+
+    const imagenAleatoria = imagenes[Math.floor(Math.random() * imagenes.length)];
+
+    document.body.style.backgroundImage = 
+        `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${imagenAleatoria})`;
+
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+});
+</script>
+
+</body>
+</html>

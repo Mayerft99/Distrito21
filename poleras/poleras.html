@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Poleras - Distrito 21</title>
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header>
+    <nav class="menu-superior">
+        <a href="../index.html">Inicio</a>
+        <a href="#">Acerca de</a>
+        <a href="#">Servicios</a>
+        <a href="#">Contacto</a>
+    </nav>
+</header>
+
+<div class="contenedor">
+
+    <aside class="menu-lateral">
+        <div class="overlay">
+            <h3>Categorías</h3>
+            <a href="poleras.html">Poleras</a>
+            <a href="../pantalones/pantalones.html">Pantalones</a>
+            <a href="../ropa interior/ropainterior.html">Ropa interior</a>
+            <a href="../accesorios/accesorios.html">Accesorios</a>
+        </div>
+    </aside>
+
+    <main class="contenido">
+
+        <div class="bloque-titulo">
+        <h1 class="titulo-principal">Sección de Poleras</h1>
+        </div>
+
+        <section class="producto-card">
+            <div class="imagen-contenedor">
+            <img src="poleraOversizeBeige.png" alt="Polera oversize"></div>
+
+            <div class="info-producto">
+                <h2>Polera Oversize Beige</h2>
+
+                <p class="descripcion">
+                Estilo relajado con actitud. Nuestra polera oversize urbana es perfecta para un look streetwear auténtico. Corte amplio, caída suelta y tela de alta calidad que brinda comodidad y presencia. Combínala con jeans, joggers o shorts para un outfit moderno y versátil.
+                    <br>
+                ✔ Corte oversize en tendencia<br>
+                ✔ Tela resistente y cómoda<br>
+                ✔ Ideal para outfits urbanos<br>
+                </p>
+
+                <p class="precio">Bs. 130</p>
+
+                <div class="menu-desplegable">
+                    <button class="boton-desplegable">
+                        Seleccionar Talla
+                    </button>
+
+                    <div class="contenido-desplegable">
+                        <a href="#">S</a>
+                        <a href="#">M</a>
+                        <a href="#">L</a>
+                        <a href="#">XL</a>
+                        <a href="#">XXL</a>
+                    </div>
+                </div>
+
+                <button class="boton-comprar">
+                    🛒 Comprar Ahora
+                </button>
+
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const imagenes = [
+        "../media/fondo1.jpg",
+        "../media/fondo2.jpg",
+        "../media/fondo3.jpg",
+        "../media/fondo4.jpg"
+    ];
+
+    const imagenAleatoria = imagenes[Math.floor(Math.random() * imagenes.length)];
+
+    document.body.style.backgroundImage = 
+        `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${imagenAleatoria})`;
+
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+});
+</script>
+
+</body>
+</html>
