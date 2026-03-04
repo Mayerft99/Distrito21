@@ -81,16 +81,18 @@ document.addEventListener("DOMContentLoaded", function() {
     window.addEventListener('scroll', function() {
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        if (window.innerWidth <= 768) { 
-            // Detectamos si el usuario está subiendo
-            if (scrollTop < lastScrollTop && scrollTop > 50) {
+        // Solo ejecutamos en pantallas pequeñas
+        if (window.innerWidth <= 768) {
+            // Si el usuario sube el dedo y no está en el tope de la página
+            if (scrollTop < lastScrollTop && scrollTop > 100) {
                 header.classList.add('header-visible');
             } 
-            // Si está bajando o está muy arriba, lo escondemos
+            // Si el usuario baja o llega al puro inicio, lo escondemos
             else {
                 header.classList.remove('header-visible');
             }
         }
+        
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
     }, { passive: true });
 });
