@@ -79,20 +79,15 @@ document.addEventListener("DOMContentLoaded", function() {
     const header = document.querySelector('header');
 
     window.addEventListener('scroll', function() {
-        
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
         if (window.innerWidth <= 768) { 
-            if (scrollTop < lastScrollTop) {
-                
+            // Detectamos si el usuario está subiendo
+            if (scrollTop < lastScrollTop && scrollTop > 50) {
                 header.classList.add('header-visible');
-            } else {
-                
-                header.classList.remove('header-visible');
-            }
-            
-           
-            if (scrollTop <= 10) {
+            } 
+            // Si está bajando o está muy arriba, lo escondemos
+            else {
                 header.classList.remove('header-visible');
             }
         }

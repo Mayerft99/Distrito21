@@ -275,18 +275,23 @@ header:hover .menu-superior {
         max-width: 300px;
     }
     header {
-        position: fixed;
+        position: fixed !important;
         top: 0;
         left: 0;
         width: 100%;
         z-index: 1000;
         margin-top: 0 !important;
-        transform: translateY(-100%);
-        transition: transform 0.4s ease-in-out;
+        transform: translateY(-110%);
+        transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        justify-content: center;
     }
 
     .header-visible {
         transform: translateY(0);
+    }
+    header.header-visible .menu-superior {
+        opacity: 1 !important;
     }
 
 }
