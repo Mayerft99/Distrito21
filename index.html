@@ -77,34 +77,27 @@ document.addEventListener("DOMContentLoaded", function() {
 document.addEventListener("DOMContentLoaded", function() {
     let lastScrollTop = 0;
     const header = document.querySelector('header');
-    const menuSuperior = document.querySelector('.menu-superior');
-
-    // Configuración inicial de visibilidad
-    menuSuperior.style.opacity = "0";
-    menuSuperior.style.transition = "opacity 0.3s ease";
-    header.style.transition = "margin-top 0.4s ease";
 
     window.addEventListener('scroll', function() {
+        
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        if (scrollTop > lastScrollTop && scrollTop > 50) {
-            // BAJANDO: Escondemos todo
-            header.style.marginTop = "-120px";
-            menuSuperior.style.opacity = "0";
-        } else {
-            // SUBIENDO: Mostramos el menú
-            header.style.marginTop = "0px";
-            menuSuperior.style.opacity = "1";
+        if (window.innerWidth <= 768) { 
+            if (scrollTop < lastScrollTop) {
+                
+                header.classList.add('header-visible');
+            } else {
+                
+                header.classList.remove('header-visible');
+            }
+            
+           
+            if (scrollTop <= 10) {
+                header.classList.remove('header-visible');
+            }
         }
-        
-        // Si estamos arriba del todo, mostramos el menú por defecto
-        if (scrollTop <= 5) {
-            header.style.marginTop = "0px";
-            menuSuperior.style.opacity = "1";
-        }
-
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
-    }, false);
+    }, { passive: true });
 });
 </script>
 </body>
