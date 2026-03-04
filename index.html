@@ -79,19 +79,22 @@ document.addEventListener("DOMContentLoaded", function() {
     const header = document.querySelector('header');
 
     window.addEventListener('scroll', function() {
-        let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
         if (window.innerWidth <= 768) {
-            if (scrollTop <= 0) {
-                header.classList.add('header-visible');
-            } else if (scrollTop < lastScrollTop && scrollTop > 100) {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Si subes el dedo (scroll arriba), muestra. Si bajas, oculta.
+            if (scrollTop < lastScrollTop) {
                 header.classList.add('header-visible');
             } else {
                 header.classList.remove('header-visible');
             }
+            
+            // Si llegas arriba de todo, lo ocultamos para ver el título principal
+            if (scrollTop <= 20) {
+                header.classList.remove('header-visible');
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
         }
-
-        lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
     }, { passive: true });
 });
 </script>

@@ -99,6 +99,29 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundAttachment = "fixed";
 });
+document.addEventListener("DOMContentLoaded", function() {
+    let lastScrollTop = 0;
+    const header = document.querySelector('header');
+
+    window.addEventListener('scroll', function() {
+        if (window.innerWidth <= 768) {
+            let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+            // Si subes el dedo (scroll arriba), muestra. Si bajas, oculta.
+            if (scrollTop < lastScrollTop) {
+                header.classList.add('header-visible');
+            } else {
+                header.classList.remove('header-visible');
+            }
+            
+            // Si llegas arriba de todo, lo ocultamos para ver el título principal
+            if (scrollTop <= 20) {
+                header.classList.remove('header-visible');
+            }
+            lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
+        }
+    }, { passive: true });
+});
 </script>
 
 </body>
