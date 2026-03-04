@@ -83,12 +83,17 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // Solo ejecutamos en pantallas pequeñas
         if (window.innerWidth <= 768) {
-            // Si el usuario sube el dedo y no está en el tope de la página
-            if (scrollTop < lastScrollTop && scrollTop > 100) {
+            
+            if (scrollTop <= 0) {
+                // TOP de la página → mostramos header
                 header.classList.add('header-visible');
             } 
-            // Si el usuario baja o llega al puro inicio, lo escondemos
+            else if (scrollTop < lastScrollTop && scrollTop > 100) {
+                // Subiendo
+                header.classList.add('header-visible');
+            } 
             else {
+                // Bajando
                 header.classList.remove('header-visible');
             }
         }
