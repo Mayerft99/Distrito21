@@ -143,10 +143,14 @@ header:hover .menu-superior {
 
 .info-producto {
     flex: 1;
+    
 }
 
 .descripcion {
     margin: 15px 0;
+    text-align: justify;
+    line-height: 1.6;
+    color: #ddd;
 }
 
 .precio {
