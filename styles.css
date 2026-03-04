@@ -273,6 +273,18 @@ header:hover .menu-superior {
         width: 100%;
         max-width: 300px;
     }
+    header {
+        position: fixed; 
+        top: 0;
+        left: 0;
+        transition: transform 0.3s ease-in-out; 
+        margin-top: 0 !important; 
+    }
+
+    
+    .header-oculto {
+        transform: translateY(-100%); 
+    }
 
 
 }

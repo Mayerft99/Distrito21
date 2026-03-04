@@ -74,6 +74,23 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.style.backgroundPosition = "center";
     document.body.style.backgroundAttachment = "fixed";
 });
+let lastScrollTop = 0;
+const header = document.querySelector('header');
+
+window.addEventListener('scroll', function() {
+    let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+    if (scrollTop > lastScrollTop) {
+        // Si bajas, ocultas el menú
+        header.classList.add('header-oculto');
+    } else {
+        // Si subes, muestras el menú
+        header.classList.remove('header-oculto');
+    }
+    
+    // Evita valores negativos en móviles
+    lastScrollTop = scrollTop <= 0 ? 0 : scrollTop; 
+}, false);
 </script>
 </body>
 </html>
