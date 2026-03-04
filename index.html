@@ -81,23 +81,16 @@ document.addEventListener("DOMContentLoaded", function() {
     window.addEventListener('scroll', function() {
         let scrollTop = window.pageYOffset || document.documentElement.scrollTop;
 
-        // Solo ejecutamos en pantallas pequeñas
         if (window.innerWidth <= 768) {
-            
             if (scrollTop <= 0) {
-                // TOP de la página → mostramos header
                 header.classList.add('header-visible');
-            } 
-            else if (scrollTop < lastScrollTop && scrollTop > 100) {
-                // Subiendo
+            } else if (scrollTop < lastScrollTop && scrollTop > 100) {
                 header.classList.add('header-visible');
-            } 
-            else {
-                // Bajando
+            } else {
                 header.classList.remove('header-visible');
             }
         }
-        
+
         lastScrollTop = scrollTop <= 0 ? 0 : scrollTop;
     }, { passive: true });
 });
