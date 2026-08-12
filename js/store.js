@@ -212,6 +212,7 @@
       precio: row.precio,
       tallas: row.tallas,
       imagen: row.imagen_url,
+      imagenAjuste: row.imagen_ajuste === "contain" ? "contain" : "cover",
       stock: row.stock,
       descripcion: row.descripcion,
       activo: row.activo,
@@ -322,6 +323,7 @@
         precio: parseFloat(payload.precio) || 0,
         tallas: (payload.tallas || "").trim(),
         imagen_url: (payload.imagen || "").trim(),
+        imagen_ajuste: payload.imagenAjuste === "contain" ? "contain" : "cover",
         stock: payload.stock === "" || payload.stock === undefined || payload.stock === null ? null : parseInt(payload.stock, 10),
         descripcion: (payload.descripcion || "").trim(),
         activo: payload.activo !== false,
@@ -337,6 +339,7 @@
       if (payload.precio !== undefined) body.precio = parseFloat(payload.precio) || 0;
       if (payload.tallas !== undefined) body.tallas = payload.tallas.trim();
       if (payload.imagen !== undefined) body.imagen_url = payload.imagen.trim();
+      if (payload.imagenAjuste !== undefined) body.imagen_ajuste = payload.imagenAjuste === "contain" ? "contain" : "cover";
       if (payload.stock !== undefined) body.stock = payload.stock === "" ? null : parseInt(payload.stock, 10);
       if (payload.descripcion !== undefined) body.descripcion = payload.descripcion.trim();
       if (payload.activo !== undefined) body.activo = payload.activo;

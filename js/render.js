@@ -29,11 +29,13 @@
   function productCardHTML(p, categoriaNombre) {
     const tallas = (p.tallas || "Única").split(",").map((t) => t.trim()).filter(Boolean);
     const sinStock = p.stock !== null && p.stock !== undefined && p.stock <= 0;
+    const fitClass = p.imagenAjuste === "contain" ? "object-contain" : "object-cover";
+    const fitBg = p.imagenAjuste === "contain" ? "bg-[var(--carbon-3)]" : "";
     return `
     <div class="glass-card rounded-2xl overflow-hidden flex flex-col">
-      <div class="aspect-[3/4] overflow-hidden relative">
+      <div class="aspect-[3/4] overflow-hidden relative ${fitBg}">
         <img src="${escapeHtml(p.imagen || "")}" alt="${escapeHtml(p.nombre)}" loading="lazy"
-             class="w-full h-full object-cover" onerror="this.src='https://placehold.co/600x750/1c1e1b/f3f1ea?text=Sin+Imagen'">
+             class="w-full h-full ${fitClass}" onerror="this.src='https://placehold.co/600x750/1c1e1b/f3f1ea?text=Sin+Imagen'">
         ${sinStock ? `<span class="absolute top-3 left-3 font-mono text-[10px] uppercase tracking-widest bg-black/70 px-2.5 py-1 rounded-full">Agotado</span>` : ""}
       </div>
       <div class="p-4 flex flex-col gap-2.5 flex-1">

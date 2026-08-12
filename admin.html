@@ -146,13 +146,39 @@
             <div>
               <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Imagen</label>
               <div class="flex gap-2">
-                <input name="imagen" type="url" placeholder="https://... o sube un archivo →" class="flex-1 rounded-xl px-4 py-3 text-sm">
+                <input name="imagen" id="imagenUrlInput" type="url" placeholder="https://... o sube un archivo →" class="flex-1 rounded-xl px-4 py-3 text-sm">
                 <label class="glass rounded-xl px-4 py-3 text-xs font-mono uppercase tracking-wider hover:border-[var(--accent)]/50 cursor-pointer shrink-0 flex items-center">
                   Subir
                   <input id="imagenFile" type="file" accept="image/*" class="hidden">
                 </label>
               </div>
               <p id="uploadStatus" class="text-[11px] font-mono text-[var(--chalk)]/40 mt-1.5"></p>
+            </div>
+
+            <div class="grid grid-cols-[1fr_112px] gap-3 items-start">
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Ajuste de imagen</label>
+                <div class="grid grid-cols-2 gap-2">
+                  <label class="ajuste-option glass rounded-xl px-3 py-3 text-xs font-mono uppercase tracking-wider text-center cursor-pointer transition-colors">
+                    <input type="radio" name="imagenAjuste" value="cover" checked class="sr-only">
+                    ✂️ Recortar
+                  </label>
+                  <label class="ajuste-option glass rounded-xl px-3 py-3 text-xs font-mono uppercase tracking-wider text-center cursor-pointer transition-colors">
+                    <input type="radio" name="imagenAjuste" value="contain" class="sr-only">
+                    🖼️ Centrar
+                  </label>
+                </div>
+                <p class="text-[11px] text-[var(--chalk)]/40 mt-1.5 leading-relaxed">
+                  <strong class="text-[var(--chalk)]/60">Recortar</strong>: llena todo el marco (puede cortar bordes).
+                  <strong class="text-[var(--chalk)]/60">Centrar</strong>: se ve la foto completa, sin recortes.
+                </p>
+              </div>
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Vista previa</label>
+                <div id="imgPreviewBox" class="aspect-[3/4] w-full rounded-xl overflow-hidden glass flex items-center justify-center">
+                  <span class="text-[10px] font-mono text-[var(--chalk)]/30 text-center px-1">Sin imagen</span>
+                </div>
+              </div>
             </div>
             <div>
               <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Descripción (opcional)</label>
@@ -251,8 +277,8 @@
 
   <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-24 opacity-0 z-[60] glass-strong rounded-full px-6 py-3 font-mono text-xs uppercase tracking-widest"></div>
 
-  <script src="js/store.js"></script>
-  <script src="js/render.js"></script>
+  <script src="js/store.js?v=3"></script>
+  <script src="js/render.js?v=3"></script>
   <script>
   (function(){
     "use strict";
@@ -511,14 +537,31 @@
       let editingProdId = null;
       let productosCache = [];
 
+      function updateImgPreview(){
+        const box = document.getElementById("imgPreviewBox");
+        const url = prodForm.imagen.value.trim();
+        const ajuste = prodForm.imagenAjuste.value;
+        if (!url){
+          box.innerHTML = `<span class="text-[10px] font-mono text-[var(--chalk)]/30 text-center px-1">Sin imagen</span>`;
+          box.classList.remove("bg-[var(--carbon-3)]");
+          return;
+        }
+        box.classList.toggle("bg-[var(--carbon-3)]", ajuste === "contain");
+        box.innerHTML = `<img src="${escapeHtml(url)}" class="w-full h-full ${ajuste === "contain" ? "object-contain" : "object-cover"}" onerror="this.parentElement.innerHTML='<span class=\\'text-[10px] font-mono text-red-400/70 text-center px-1\\'>No se pudo cargar</span>'">`;
+      }
+      prodForm.imagen.addEventListener("input", updateImgPreview);
+      prodForm.querySelectorAll('input[name="imagenAjuste"]').forEach(r => r.addEventListener("change", updateImgPreview));
+
       function resetProdForm(){
         prodForm.reset();
         prodForm.id.value = "";
         prodForm.activo.checked = true;
+        prodForm.imagenAjuste.value = "cover";
         editingProdId = null;
         prodFormTitle.textContent = "Nuevo producto";
         prodCancelBtn.classList.add("hidden");
         document.getElementById("uploadStatus").textContent = "";
+        updateImgPreview();
       }
 
       async function renderProductos(){
@@ -538,9 +581,10 @@
         }
         list.innerHTML = productos.map(p => {
           const cat = catById[p.categoriaId];
+          const fitClass = p.imagenAjuste === "contain" ? "object-contain bg-[var(--carbon-3)]" : "object-cover";
           return `
           <div class="glass rounded-xl p-3.5 flex items-center gap-3">
-            <img src="${escapeHtml(p.imagen || "")}" onerror="this.src='https://placehold.co/100x100/1c1e1b/f3f1ea?text=%20'" class="w-14 h-14 rounded-lg object-cover shrink-0">
+            <img src="${escapeHtml(p.imagen || "")}" onerror="this.src='https://placehold.co/100x100/1c1e1b/f3f1ea?text=%20'" class="w-14 h-14 rounded-lg ${fitClass} shrink-0">
             <div class="min-w-0 flex-1">
               <p class="font-display font-semibold text-sm truncate">${escapeHtml(p.nombre)} ${p.activo === false ? '<span class="text-[10px] text-red-400 font-mono">· oculto</span>' : ""}</p>
               <p class="font-mono text-[10px] text-[var(--chalk)]/40 mt-0.5">${cat ? (cat.icono+" "+escapeHtml(cat.nombre)) : "Sin categoría"} · ${S.money(p.precio)}</p>
@@ -562,6 +606,7 @@
           tallas: prodForm.tallas.value,
           stock: prodForm.stock.value,
           imagen: prodForm.imagen.value,
+          imagenAjuste: prodForm.imagenAjuste.value,
           descripcion: prodForm.descripcion.value,
           activo: prodForm.activo.checked,
         };
@@ -590,6 +635,7 @@
         try {
           const url = await S.subirImagen(file);
           prodForm.imagen.value = url;
+          updateImgPreview();
           status.textContent = "✅ Imagen subida.";
         } catch (err) {
           status.textContent = "❌ " + err.message + " — ¿Creaste el bucket público \"productos\" y corriste el SQL de políticas?";
@@ -609,10 +655,12 @@
           prodForm.tallas.value = p.tallas;
           prodForm.stock.value = p.stock === null || p.stock === undefined ? "" : p.stock;
           prodForm.imagen.value = p.imagen;
+          prodForm.imagenAjuste.value = p.imagenAjuste === "contain" ? "contain" : "cover";
           prodForm.descripcion.value = p.descripcion || "";
           prodForm.activo.checked = p.activo !== false;
           prodFormTitle.textContent = "Editando: " + p.nombre;
           prodCancelBtn.classList.remove("hidden");
+          updateImgPreview();
           prodForm.scrollIntoView({ behavior: "smooth", block: "start" });
         } else if (delBtn){
           const p = productosCache.find(x => x.id === delBtn.dataset.id);
