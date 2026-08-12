@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Panel de Control — DISTRITO 21</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body class="relative min-h-screen pb-16">
+
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+  <div class="grain"></div>
+
+  <!-- ============ PANTALLA DE ACCESO (Supabase Auth) ============ -->
+  <div id="lockScreen" class="fixed inset-0 z-[100] flex items-center justify-center px-4">
+    <div class="glass-strong rounded-3xl p-8 w-full max-w-sm">
+      <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-accent mb-2 text-center">Acceso interno</p>
+      <h1 class="font-display font-bold text-2xl text-center mb-6">Panel de Control D21</h1>
+
+      <div id="lockNotConfigured" class="hidden text-center space-y-4">
+        <p class="text-sm text-[var(--chalk)]/60">Todavía no conectaste este panel a Supabase.</p>
+        <a href="#" id="lockGotoConfig" class="btn-primary inline-block font-display font-semibold px-6 py-3 rounded-full text-sm uppercase tracking-wider">Conectar ahora</a>
+      </div>
+
+      <form id="lockForm" class="space-y-4">
+        <div>
+          <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Correo</label>
+          <input id="lockEmail" type="email" placeholder="tu@correo.com" autocomplete="username" class="w-full rounded-xl px-4 py-3 text-sm">
+        </div>
+        <div>
+          <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Contraseña</label>
+          <input id="lockPassword" type="password" placeholder="••••••••" autocomplete="current-password" class="w-full rounded-xl px-4 py-3 text-sm">
+        </div>
+        <p id="lockError" class="hidden text-center text-xs text-red-400 font-mono"></p>
+        <button type="submit" id="lockSubmitBtn" class="w-full btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Iniciar sesión</button>
+      </form>
+      <p class="text-center text-[10px] text-[var(--chalk)]/35 font-mono mt-5 leading-relaxed">
+        ¿No tienes usuario todavía? Créalo en tu proyecto Supabase → Authentication → Users → Add user.
+      </p>
+      <a href="index.html" class="block text-center text-[11px] font-mono uppercase tracking-widest text-[var(--chalk)]/40 hover:text-accent mt-5">← Volver a la tienda</a>
+    </div>
+  </div>
+
+  <!-- ============ PANEL (oculto hasta iniciar sesión) ============ -->
+  <div id="panelRoot" class="hidden">
+
+    <!-- ============ HEADER ============ -->
+    <header class="sticky top-0 z-40 px-4 sm:px-8 pt-4">
+      <div class="max-w-5xl mx-auto glass rounded-2xl px-5 sm:px-8 py-4 flex items-center justify-between">
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-accent mb-1">Acceso interno</p>
+          <h1 class="font-display font-bold text-lg sm:text-xl">Panel de Control D21</h1>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span id="connBadge" class="hidden sm:flex items-center gap-1.5 font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/40">
+            <span id="connDot" class="w-1.5 h-1.5 rounded-full bg-red-400"></span> <span id="connText">Sin conectar</span>
+          </span>
+          <a href="index.html" class="glass rounded-full px-4 py-2.5 text-[11px] font-mono uppercase tracking-widest hover:border-[var(--accent)]/50 transition-colors">← Tienda</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- ============ TABS ============ -->
+    <div class="sticky top-[76px] sm:top-[84px] z-30 px-4 sm:px-8 mt-4">
+      <div class="max-w-5xl mx-auto glass rounded-2xl p-1.5 flex gap-1.5 overflow-x-auto">
+        <button data-tab="categorias" class="admin-tab-btn admin-tab active flex-1 rounded-xl py-3 px-4">🗂️ Categorías</button>
+        <button data-tab="productos" class="admin-tab-btn admin-tab flex-1 rounded-xl py-3 px-4">📦 Productos</button>
+        <button data-tab="exportar" class="admin-tab-btn admin-tab flex-1 rounded-xl py-3 px-4">📤 Exportar</button>
+        <button data-tab="config" class="admin-tab-btn admin-tab flex-1 rounded-xl py-3 px-4">⚙️ Configuración</button>
+      </div>
+    </div>
+
+    <main class="relative z-10 max-w-5xl mx-auto px-4 sm:px-8 py-6 space-y-6">
+
+      <!-- banner cuando falta configurar Supabase -->
+      <div id="notConfiguredBanner" class="hidden glass rounded-2xl p-6 text-center">
+        <p class="font-display font-bold text-lg mb-2">Conecta tu base de datos</p>
+        <p class="text-[var(--chalk)]/50 text-sm mb-4">Antes de agregar categorías o productos, conecta tu proyecto de Supabase.</p>
+        <button class="goto-config btn-primary font-display font-semibold px-6 py-3 rounded-full text-sm uppercase tracking-wider">Ir a Configuración</button>
+      </div>
+
+      <!-- ============ SECCIÓN: CATEGORÍAS ============ -->
+      <section id="tab-categorias" class="admin-section active space-y-6">
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-4" id="catFormTitle">Nueva categoría</h2>
+          <form id="catForm" class="space-y-4">
+            <input type="hidden" name="id">
+            <div class="grid grid-cols-[72px_1fr] gap-3">
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Ícono</label>
+                <input name="icono" type="text" maxlength="4" placeholder="👕" class="w-full rounded-xl px-3 py-3 text-lg text-center">
+              </div>
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Nombre de la categoría</label>
+                <input required name="nombre" type="text" placeholder="Ej. Chompas" class="w-full rounded-xl px-4 py-3 text-sm">
+              </div>
+            </div>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Guardar categoría</button>
+              <button type="button" id="catCancelBtn" class="hidden glass rounded-full px-6 py-3.5 text-sm font-mono uppercase tracking-wider hover:border-[var(--accent)]/50">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div>
+          <p class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 mb-3">Categorías existentes (<span id="catCount">0</span>)</p>
+          <div id="catList" class="grid sm:grid-cols-2 gap-3"></div>
+        </div>
+      </section>
+
+      <!-- ============ SECCIÓN: PRODUCTOS ============ -->
+      <section id="tab-productos" class="admin-section space-y-6">
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-4" id="prodFormTitle">Nuevo producto</h2>
+          <form id="prodForm" class="space-y-4">
+            <input type="hidden" name="id">
+            <div>
+              <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Nombre del producto</label>
+              <input required name="nombre" type="text" placeholder="Ej. Chaqueta Técnica Storm" class="w-full rounded-xl px-4 py-3 text-sm">
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Categoría</label>
+                <select required name="categoriaId" class="w-full rounded-xl px-4 py-3 text-sm"></select>
+              </div>
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Precio (Bs.)</label>
+                <input required name="precio" type="number" min="0" step="0.01" placeholder="299" class="w-full rounded-xl px-4 py-3 text-sm">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Tallas disponibles</label>
+                <input required name="tallas" type="text" placeholder="S, M, L, XL" class="w-full rounded-xl px-4 py-3 text-sm">
+              </div>
+              <div>
+                <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Stock (opcional)</label>
+                <input name="stock" type="number" min="0" placeholder="10" class="w-full rounded-xl px-4 py-3 text-sm">
+              </div>
+            </div>
+            <div>
+              <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Imagen</label>
+              <div class="flex gap-2">
+                <input name="imagen" type="url" placeholder="https://... o sube un archivo →" class="flex-1 rounded-xl px-4 py-3 text-sm">
+                <label class="glass rounded-xl px-4 py-3 text-xs font-mono uppercase tracking-wider hover:border-[var(--accent)]/50 cursor-pointer shrink-0 flex items-center">
+                  Subir
+                  <input id="imagenFile" type="file" accept="image/*" class="hidden">
+                </label>
+              </div>
+              <p id="uploadStatus" class="text-[11px] font-mono text-[var(--chalk)]/40 mt-1.5"></p>
+            </div>
+            <div>
+              <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Descripción (opcional)</label>
+              <textarea name="descripcion" rows="2" placeholder="Material, estilo, detalles..." class="w-full rounded-xl px-4 py-3 text-sm"></textarea>
+            </div>
+            <label class="flex items-center gap-2.5 font-mono text-xs uppercase tracking-widest text-[var(--chalk)]/60">
+              <input type="checkbox" name="activo" checked class="w-4 h-4 rounded accent-[var(--accent)]">
+              Publicado en la tienda
+            </label>
+            <div class="flex gap-3">
+              <button type="submit" class="flex-1 btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Guardar producto</button>
+              <button type="button" id="prodCancelBtn" class="hidden glass rounded-full px-6 py-3.5 text-sm font-mono uppercase tracking-wider hover:border-[var(--accent)]/50">Cancelar</button>
+            </div>
+          </form>
+        </div>
+
+        <div>
+          <div class="flex flex-col sm:flex-row gap-3 mb-4">
+            <input id="prodSearch" type="text" placeholder="Buscar producto..." class="flex-1 rounded-xl px-4 py-2.5 text-sm">
+            <select id="prodFilterCat" class="rounded-xl px-4 py-2.5 text-sm sm:w-56">
+              <option value="">Todas las categorías</option>
+            </select>
+          </div>
+          <p class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 mb-3">Inventario (<span id="prodCount">0</span>)</p>
+          <div id="prodList" class="grid sm:grid-cols-2 gap-3"></div>
+        </div>
+      </section>
+
+      <!-- ============ SECCIÓN: EXPORTAR ============ -->
+      <section id="tab-exportar" class="admin-section space-y-6">
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-2">Exportar catálogo completo</h2>
+          <p class="text-sm text-[var(--chalk)]/50 mb-4">Genera un texto listo para pegar en Estados o mensajes masivos de WhatsApp Business.</p>
+          <button id="exportBtn" class="w-full btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider flex items-center justify-center gap-2 mb-4">
+            Copiar catálogo al portapapeles
+          </button>
+          <textarea id="exportPreview" readonly rows="12" class="w-full rounded-xl px-4 py-3 text-xs font-mono leading-relaxed"></textarea>
+        </div>
+      </section>
+
+      <!-- ============ SECCIÓN: CONFIGURACIÓN ============ -->
+      <section id="tab-config" class="admin-section space-y-6">
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-1">🔗 Conexión Supabase</h2>
+          <p class="text-sm text-[var(--chalk)]/50 mb-4">Encuentra estos datos en tu proyecto → <strong class="text-[var(--chalk)]/70">Project Settings → API</strong>.</p>
+          <form id="configForm" class="space-y-4">
+            <div>
+              <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Supabase URL</label>
+              <input id="cfgUrl" type="text" placeholder="https://xxxxx.supabase.co" class="w-full rounded-xl px-4 py-3 text-sm">
+            </div>
+            <div>
+              <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">API Key (anon / public)</label>
+              <input id="cfgKey" type="text" placeholder="eyJhbGciOi..." class="w-full rounded-xl px-4 py-3 text-sm">
+            </div>
+            <div class="flex flex-col sm:flex-row gap-3">
+              <button type="submit" class="flex-1 btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Guardar</button>
+              <button type="button" id="testConnBtn" class="glass rounded-full px-6 py-3.5 text-sm font-mono uppercase tracking-wider hover:border-[var(--accent)]/50">Probar conexión</button>
+            </div>
+          </form>
+          <p id="configStatus" class="text-xs font-mono mt-3"></p>
+        </div>
+
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-1">👤 Cuenta</h2>
+          <p class="text-sm text-[var(--chalk)]/50 mb-4">Sesión activa: <span id="cuentaEmail" class="text-[var(--chalk)]/80 font-mono">—</span></p>
+          <button id="logoutBtn" class="glass rounded-full px-6 py-3 text-xs font-mono uppercase tracking-wider hover:border-red-400/50 hover:text-red-400 transition-colors">Cerrar sesión</button>
+        </div>
+
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-3">📋 Cómo configurar Supabase (primera vez)</h2>
+          <ol class="space-y-2.5 text-sm text-[var(--chalk)]/65 list-decimal list-inside">
+            <li>Ve a <strong class="text-[var(--chalk)]">supabase.com</strong> y crea una cuenta gratuita, luego un nuevo proyecto.</li>
+            <li>Abre <strong class="text-[var(--chalk)]">SQL Editor</strong> y pega el contenido completo de <code class="font-mono text-accent">supabase-setup.sql</code> incluido en este proyecto. Ejecuta.</li>
+            <li>Ve a <strong class="text-[var(--chalk)]">Storage</strong> → crea un bucket llamado <code class="font-mono text-accent">productos</code> → márcalo público.</li>
+            <li>Ve a <strong class="text-[var(--chalk)]">Authentication → Providers → Email</strong> y desactiva <em>"Allow new users to sign up"</em> — este panel no tiene registro público, solo login.</li>
+            <li>Ve a <strong class="text-[var(--chalk)]">Authentication → Users → Add user</strong> y crea tu usuario admin (email + contraseña).</li>
+            <li>Ve a <strong class="text-[var(--chalk)]">Project Settings → API</strong>, copia la URL y la <em>anon key</em>, pégalas arriba y presiona <strong class="text-[var(--chalk)]">Guardar</strong>.</li>
+            <li>Vuelve a la pantalla de acceso e inicia sesión con el usuario que creaste en el paso 5.</li>
+          </ol>
+        </div>
+
+        <div class="glass rounded-2xl p-5 sm:p-6">
+          <h2 class="font-display font-bold text-lg mb-2">🔒 Cómo queda protegido</h2>
+          <p class="text-sm text-[var(--chalk)]/60 leading-relaxed">
+            La lectura del catálogo (lo que ve un visitante) sigue siendo pública. Pero crear, editar o eliminar
+            categorías, productos, o subir imágenes ahora exige una sesión real de Supabase Auth —
+            las políticas de la base de datos verifican <code class="font-mono text-accent">auth.uid()</code>,
+            no una contraseña guardada en el navegador. Alguien con tu anon key puede leer el catálogo,
+            pero no puede escribir nada sin iniciar sesión con una cuenta que tú hayas creado.
+          </p>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-24 opacity-0 z-[60] glass-strong rounded-full px-6 py-3 font-mono text-xs uppercase tracking-widest"></div>
+
+  <script src="js/store.js"></script>
+  <script src="js/render.js"></script>
+  <script>
+  (function(){
+    "use strict";
+    const S = window.D21Store;
+    const toast = window.D21Toast;
+
+    function escapeHtml(str){
+      return String(str).replace(/[&<>"']/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#39;" }[c]));
+    }
+
+    // ---------- LOCK SCREEN (Supabase Auth) ----------
+    const lockScreen = document.getElementById("lockScreen");
+    const panelRoot = document.getElementById("panelRoot");
+    const lockForm = document.getElementById("lockForm");
+    const lockNotConfigured = document.getElementById("lockNotConfigured");
+    const lockError = document.getElementById("lockError");
+    const lockSubmitBtn = document.getElementById("lockSubmitBtn");
+
+    function showLockScreen(){
+      lockScreen.classList.remove("hidden");
+      panelRoot.classList.add("hidden");
+      const configured = S.isConfigured();
+      lockNotConfigured.classList.toggle("hidden", configured);
+      lockForm.classList.toggle("hidden", !configured);
+    }
+
+    function unlock(){
+      lockScreen.classList.add("hidden");
+      panelRoot.classList.remove("hidden");
+      initPanel();
+    }
+
+    document.getElementById("lockGotoConfig").addEventListener("click", (e) => {
+      e.preventDefault();
+      // No hay conexión todavía: mandamos directo a llenar el formulario mostrando el panel en modo config.
+      lockScreen.classList.add("hidden");
+      panelRoot.classList.remove("hidden");
+      initPanel();
+      switchTabGlobal("config");
+    });
+
+    let switchTabGlobal = () => {};
+
+    lockForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      lockError.classList.add("hidden");
+      const email = document.getElementById("lockEmail").value.trim();
+      const password = document.getElementById("lockPassword").value;
+      if (!email || !password){
+        lockError.textContent = "Escribe tu correo y contraseña.";
+        lockError.classList.remove("hidden");
+        return;
+      }
+      lockSubmitBtn.disabled = true;
+      lockSubmitBtn.textContent = "Verificando…";
+      try {
+        await S.signIn(email, password);
+        unlock();
+      } catch (err) {
+        lockError.textContent = err.message || "No se pudo iniciar sesión.";
+        lockError.classList.remove("hidden");
+      } finally {
+        lockSubmitBtn.disabled = false;
+        lockSubmitBtn.textContent = "Iniciar sesión";
+      }
+    });
+
+    if (S.isAuthenticated()){
+      unlock();
+    } else {
+      showLockScreen();
+    }
+
+    function initPanel(){
+      // ---------- TABS ----------
+      document.querySelectorAll(".admin-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => switchTab(btn.dataset.tab));
+      });
+      document.querySelectorAll(".goto-config").forEach(btn => btn.addEventListener("click", () => switchTab("config")));
+
+      function switchTab(tab){
+        document.querySelectorAll(".admin-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+        document.querySelectorAll(".admin-section").forEach(s => s.classList.toggle("active", s.id === "tab-" + tab));
+        if (tab === "exportar") refreshExportPreview();
+      }
+      switchTabGlobal = switchTab;
+
+      // ---------- CONFIGURACIÓN ----------
+      const cfg = S.getConfig();
+      if (cfg){
+        document.getElementById("cfgUrl").value = cfg.url;
+        document.getElementById("cfgKey").value = cfg.key;
+      }
+      const user = S.currentUser();
+      document.getElementById("cuentaEmail").textContent = user ? user.email : "—";
+
+      function updateConnBadge(ok){
+        const dot = document.getElementById("connDot");
+        const text = document.getElementById("connText");
+        dot.classList.toggle("bg-red-400", !ok);
+        dot.classList.toggle("bg-[var(--accent)]", ok);
+        text.textContent = ok ? "Conectado" : "Sin conectar";
+      }
+
+      document.getElementById("configForm").addEventListener("submit", async e => {
+        e.preventDefault();
+        const url = document.getElementById("cfgUrl").value.trim();
+        const key = document.getElementById("cfgKey").value.trim();
+        const status = document.getElementById("configStatus");
+        if (!url || !key){
+          status.textContent = "Completa la URL y la API Key.";
+          status.className = "text-xs font-mono mt-3 text-red-400";
+          return;
+        }
+        S.setConfig(url, key);
+        status.textContent = "Probando conexión…";
+        status.className = "text-xs font-mono mt-3 text-[var(--chalk)]/50";
+        try {
+          await S.testConnection();
+          status.textContent = "✅ Conectado correctamente. Si aún no iniciaste sesión, cierra sesión y vuelve a entrar.";
+          status.className = "text-xs font-mono mt-3 text-[var(--accent)]";
+          updateConnBadge(true);
+          toast("Conectado a Supabase");
+          renderAll();
+        } catch (err) {
+          status.textContent = "❌ No se pudo conectar: " + err.message + ". Verifica que corriste supabase-setup.sql.";
+          status.className = "text-xs font-mono mt-3 text-red-400";
+          updateConnBadge(false);
+        }
+      });
+
+      document.getElementById("testConnBtn").addEventListener("click", async () => {
+        const status = document.getElementById("configStatus");
+        if (!S.isConfigured()){
+          status.textContent = "Primero guarda la URL y la API Key.";
+          status.className = "text-xs font-mono mt-3 text-red-400";
+          return;
+        }
+        status.textContent = "Probando conexión…";
+        status.className = "text-xs font-mono mt-3 text-[var(--chalk)]/50";
+        try {
+          await S.testConnection();
+          status.textContent = "✅ Conexión exitosa con Supabase.";
+          status.className = "text-xs font-mono mt-3 text-[var(--accent)]";
+          updateConnBadge(true);
+        } catch (err) {
+          status.textContent = "❌ " + err.message;
+          status.className = "text-xs font-mono mt-3 text-red-400";
+          updateConnBadge(false);
+        }
+      });
+
+      document.getElementById("logoutBtn").addEventListener("click", async () => {
+        await S.signOut();
+        location.reload();
+      });
+
+      // ---------- CATEGORÍAS ----------
+      const catForm = document.getElementById("catForm");
+      const catCancelBtn = document.getElementById("catCancelBtn");
+      const catFormTitle = document.getElementById("catFormTitle");
+      let editingCatId = null;
+      let categoriasCache = [];
+
+      function resetCatForm(){
+        catForm.reset();
+        catForm.id.value = "";
+        editingCatId = null;
+        catFormTitle.textContent = "Nueva categoría";
+        catCancelBtn.classList.add("hidden");
+      }
+
+      async function renderCategorias(){
+        const categorias = await S.getCategorias();
+        categoriasCache = categorias;
+        document.getElementById("catCount").textContent = categorias.length;
+        const list = document.getElementById("catList");
+        if (categorias.length === 0){
+          list.innerHTML = `<p class="col-span-full text-center text-[var(--chalk)]/40 font-mono text-xs uppercase tracking-widest py-8">Sin categorías todavía</p>`;
+        } else {
+          const counts = await Promise.all(categorias.map(c => S.contarProductosPorCategoria(c.id)));
+          list.innerHTML = categorias.map((c, i) => {
+            const n = counts[i];
+            return `
+            <div class="glass rounded-xl p-4 flex items-center gap-3">
+              <span class="text-2xl shrink-0">${c.icono || "🏷️"}</span>
+              <div class="min-w-0 flex-1">
+                <p class="font-display font-semibold text-sm truncate">${escapeHtml(c.nombre)}</p>
+                <p class="font-mono text-[10px] text-[var(--chalk)]/40 mt-0.5">/${escapeHtml(c.slug)} · ${n} ${n===1?"producto":"productos"}</p>
+              </div>
+              <div class="flex gap-1.5 shrink-0">
+                <button class="cat-edit w-8 h-8 rounded-full glass flex items-center justify-center hover:border-[var(--accent)]/50" data-id="${c.id}" title="Editar">✎</button>
+                <button class="cat-del w-8 h-8 rounded-full glass flex items-center justify-center hover:border-red-400/50 hover:text-red-400" data-id="${c.id}" title="Eliminar">✕</button>
+              </div>
+            </div>`;
+          }).join("");
+        }
+        const opts = categorias.map(c => `<option value="${c.id}">${c.icono||""} ${escapeHtml(c.nombre)}</option>`).join("");
+        document.querySelector('select[name="categoriaId"]').innerHTML = `<option value="" disabled selected>Selecciona...</option>` + opts;
+        document.getElementById("prodFilterCat").innerHTML = `<option value="">Todas las categorías</option>` + opts;
+      }
+
+      catForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const nombre = catForm.nombre.value.trim();
+        const icono = catForm.icono.value.trim();
+        if (!nombre) return;
+        try {
+          if (editingCatId){
+            await S.updateCategoria(editingCatId, { nombre, icono });
+            toast("Categoría actualizada");
+          } else {
+            await S.addCategoria(nombre, icono);
+            toast("Categoría creada");
+          }
+          resetCatForm();
+        } catch (err) {
+          handleWriteError(err);
+        }
+      });
+      catCancelBtn.addEventListener("click", resetCatForm);
+
+      document.getElementById("catList").addEventListener("click", async e => {
+        const editBtn = e.target.closest(".cat-edit");
+        const delBtn = e.target.closest(".cat-del");
+        if (editBtn){
+          const cat = categoriasCache.find(c => c.id === editBtn.dataset.id);
+          if (!cat) return;
+          editingCatId = cat.id;
+          catForm.nombre.value = cat.nombre;
+          catForm.icono.value = cat.icono || "";
+          catFormTitle.textContent = "Editando: " + cat.nombre;
+          catCancelBtn.classList.remove("hidden");
+          catForm.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (delBtn){
+          const cat = categoriasCache.find(c => c.id === delBtn.dataset.id);
+          if (!cat) return;
+          const n = await S.contarProductosPorCategoria(cat.id);
+          const msg = n > 0
+            ? `"${cat.nombre}" tiene ${n} producto(s). Se eliminará la categoría y esos productos quedarán como "Sin categoría". ¿Continuar?`
+            : `¿Eliminar la categoría "${cat.nombre}"?`;
+          if (confirm(msg)){
+            try {
+              await S.deleteCategoria(cat.id);
+              toast("Categoría eliminada");
+              if (editingCatId === cat.id) resetCatForm();
+            } catch (err) { handleWriteError(err); }
+          }
+        }
+      });
+
+      // ---------- PRODUCTOS ----------
+      const prodForm = document.getElementById("prodForm");
+      const prodCancelBtn = document.getElementById("prodCancelBtn");
+      const prodFormTitle = document.getElementById("prodFormTitle");
+      let editingProdId = null;
+      let productosCache = [];
+
+      function resetProdForm(){
+        prodForm.reset();
+        prodForm.id.value = "";
+        prodForm.activo.checked = true;
+        editingProdId = null;
+        prodFormTitle.textContent = "Nuevo producto";
+        prodCancelBtn.classList.add("hidden");
+        document.getElementById("uploadStatus").textContent = "";
+      }
+
+      async function renderProductos(){
+        const search = document.getElementById("prodSearch").value.trim().toLowerCase();
+        const filterCat = document.getElementById("prodFilterCat").value;
+        let productos = await S.getProductos();
+        productosCache = productos;
+        document.getElementById("prodCount").textContent = productos.length;
+        if (search) productos = productos.filter(p => p.nombre.toLowerCase().includes(search));
+        if (filterCat) productos = productos.filter(p => p.categoriaId === filterCat);
+
+        const catById = Object.fromEntries(categoriasCache.map(c => [c.id, c]));
+        const list = document.getElementById("prodList");
+        if (productos.length === 0){
+          list.innerHTML = `<p class="col-span-full text-center text-[var(--chalk)]/40 font-mono text-xs uppercase tracking-widest py-8">Sin resultados</p>`;
+          return;
+        }
+        list.innerHTML = productos.map(p => {
+          const cat = catById[p.categoriaId];
+          return `
+          <div class="glass rounded-xl p-3.5 flex items-center gap-3">
+            <img src="${escapeHtml(p.imagen || "")}" onerror="this.src='https://placehold.co/100x100/1c1e1b/f3f1ea?text=%20'" class="w-14 h-14 rounded-lg object-cover shrink-0">
+            <div class="min-w-0 flex-1">
+              <p class="font-display font-semibold text-sm truncate">${escapeHtml(p.nombre)} ${p.activo === false ? '<span class="text-[10px] text-red-400 font-mono">· oculto</span>' : ""}</p>
+              <p class="font-mono text-[10px] text-[var(--chalk)]/40 mt-0.5">${cat ? (cat.icono+" "+escapeHtml(cat.nombre)) : "Sin categoría"} · ${S.money(p.precio)}</p>
+            </div>
+            <div class="flex gap-1.5 shrink-0">
+              <button class="prod-edit w-8 h-8 rounded-full glass flex items-center justify-center hover:border-[var(--accent)]/50" data-id="${p.id}" title="Editar">✎</button>
+              <button class="prod-del w-8 h-8 rounded-full glass flex items-center justify-center hover:border-red-400/50 hover:text-red-400" data-id="${p.id}" title="Eliminar">✕</button>
+            </div>
+          </div>`;
+        }).join("");
+      }
+
+      prodForm.addEventListener("submit", async e => {
+        e.preventDefault();
+        const payload = {
+          nombre: prodForm.nombre.value,
+          categoriaId: prodForm.categoriaId.value || null,
+          precio: prodForm.precio.value,
+          tallas: prodForm.tallas.value,
+          stock: prodForm.stock.value,
+          imagen: prodForm.imagen.value,
+          descripcion: prodForm.descripcion.value,
+          activo: prodForm.activo.checked,
+        };
+        try {
+          if (editingProdId){
+            await S.updateProducto(editingProdId, payload);
+            toast("Producto actualizado");
+          } else {
+            await S.addProducto(payload);
+            toast("Producto guardado y publicado");
+          }
+          resetProdForm();
+        } catch (err) {
+          handleWriteError(err);
+        }
+      });
+      prodCancelBtn.addEventListener("click", resetProdForm);
+      document.getElementById("prodSearch").addEventListener("input", renderProductos);
+      document.getElementById("prodFilterCat").addEventListener("change", renderProductos);
+
+      document.getElementById("imagenFile").addEventListener("change", async e => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const status = document.getElementById("uploadStatus");
+        status.textContent = "Subiendo imagen…";
+        try {
+          const url = await S.subirImagen(file);
+          prodForm.imagen.value = url;
+          status.textContent = "✅ Imagen subida.";
+        } catch (err) {
+          status.textContent = "❌ " + err.message + " — ¿Creaste el bucket público \"productos\" y corriste el SQL de políticas?";
+        }
+      });
+
+      document.getElementById("prodList").addEventListener("click", async e => {
+        const editBtn = e.target.closest(".prod-edit");
+        const delBtn = e.target.closest(".prod-del");
+        if (editBtn){
+          const p = productosCache.find(x => x.id === editBtn.dataset.id);
+          if (!p) return;
+          editingProdId = p.id;
+          prodForm.nombre.value = p.nombre;
+          prodForm.categoriaId.value = p.categoriaId || "";
+          prodForm.precio.value = p.precio;
+          prodForm.tallas.value = p.tallas;
+          prodForm.stock.value = p.stock === null || p.stock === undefined ? "" : p.stock;
+          prodForm.imagen.value = p.imagen;
+          prodForm.descripcion.value = p.descripcion || "";
+          prodForm.activo.checked = p.activo !== false;
+          prodFormTitle.textContent = "Editando: " + p.nombre;
+          prodCancelBtn.classList.remove("hidden");
+          prodForm.scrollIntoView({ behavior: "smooth", block: "start" });
+        } else if (delBtn){
+          const p = productosCache.find(x => x.id === delBtn.dataset.id);
+          if (!p) return;
+          if (confirm(`¿Eliminar "${p.nombre}"?`)){
+            try {
+              await S.deleteProducto(p.id);
+              toast("Producto eliminado");
+              if (editingProdId === p.id) resetProdForm();
+            } catch (err) { handleWriteError(err); }
+          }
+        }
+      });
+
+      // ---------- EXPORTAR ----------
+      async function refreshExportPreview(){
+        if (!S.isConfigured()) return;
+        try {
+          document.getElementById("exportPreview").value = await S.exportCatalogoTexto();
+        } catch (err) {
+          document.getElementById("exportPreview").value = "No se pudo generar el catálogo: " + err.message;
+        }
+      }
+      document.getElementById("exportBtn").addEventListener("click", async () => {
+        try {
+          const text = await S.exportCatalogoTexto();
+          document.getElementById("exportPreview").value = text;
+          try {
+            await navigator.clipboard.writeText(text);
+            toast("Catálogo copiado al portapapeles");
+          } catch {
+            const ta = document.getElementById("exportPreview");
+            ta.select();
+            document.execCommand("copy");
+            toast("Catálogo copiado al portapapeles");
+          }
+        } catch (err) {
+          toast("Error: " + err.message);
+        }
+      });
+
+      // ---------- Manejo de sesión expirada / sin permisos ----------
+      function handleWriteError(err){
+        if (err && err.code === "AUTH_REQUIRED"){
+          toast("Tu sesión expiró. Inicia sesión de nuevo.");
+          setTimeout(() => location.reload(), 1200);
+          return;
+        }
+        toast("Error: " + err.message);
+      }
+
+      // ---------- INIT / SYNC ----------
+      async function renderAll(){
+        const configured = S.isConfigured();
+        document.getElementById("notConfiguredBanner").classList.toggle("hidden", configured);
+        if (!configured){
+          updateConnBadge(false);
+          return;
+        }
+        try {
+          await S.testConnection();
+          updateConnBadge(true);
+          await renderCategorias();
+          await renderProductos();
+        } catch (err) {
+          updateConnBadge(false);
+          if (err && err.code === "AUTH_REQUIRED"){
+            toast("Tu sesión expiró. Inicia sesión de nuevo.");
+            setTimeout(() => location.reload(), 1200);
+          } else {
+            toast("No se pudo conectar a Supabase");
+          }
+        }
+      }
+      renderAll();
+      window.addEventListener("d21:update", renderAll);
+    }
+  })();
+  </script>
+</body>
+</html>
