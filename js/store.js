@@ -150,7 +150,10 @@
   }
   function isAuthenticated() {
     const session = loadSession();
-    return !!session;
+    if (!session || !session.access_token) return false;
+    // Sesión vencida y sin refresh_token utilizable: no cuenta como logueado.
+    if (session.expires_at && session.expires_at < Date.now() && !session.refresh_token) return false;
+    return true;
   }
 
   // ---------------- Cliente REST (PostgREST) ----------------
