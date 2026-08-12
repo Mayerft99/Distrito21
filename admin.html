@@ -22,12 +22,23 @@
       <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-accent mb-2 text-center">Acceso interno</p>
       <h1 class="font-display font-bold text-2xl text-center mb-6">Panel de Control D21</h1>
 
-      <div id="lockNotConfigured" class="hidden text-center space-y-4">
-        <p class="text-sm text-[var(--chalk)]/60">Todavía no conectaste este panel a Supabase.</p>
-        <a href="#" id="lockGotoConfig" class="btn-primary inline-block font-display font-semibold px-6 py-3 rounded-full text-sm uppercase tracking-wider">Conectar ahora</a>
-      </div>
+      <!-- Paso 1: conectar el proyecto de Supabase (no da acceso al panel) -->
+      <form id="lockConfigForm" class="hidden space-y-4">
+        <p class="text-sm text-[var(--chalk)]/60 text-center mb-1">Primero conecta tu proyecto de Supabase.</p>
+        <div>
+          <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Supabase URL</label>
+          <input id="lockCfgUrl" type="text" placeholder="https://xxxxx.supabase.co" class="w-full rounded-xl px-4 py-3 text-sm">
+        </div>
+        <div>
+          <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">API Key (anon / public)</label>
+          <input id="lockCfgKey" type="text" placeholder="eyJhbGciOi..." class="w-full rounded-xl px-4 py-3 text-sm">
+        </div>
+        <p id="lockCfgStatus" class="hidden text-center text-xs font-mono"></p>
+        <button type="submit" id="lockCfgSubmitBtn" class="w-full btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Guardar y continuar</button>
+      </form>
 
-      <form id="lockForm" class="space-y-4">
+      <!-- Paso 2: iniciar sesión (esto es lo único que desbloquea el panel) -->
+      <form id="lockForm" class="hidden space-y-4">
         <div>
           <label class="font-mono text-[10px] uppercase tracking-widest text-[var(--chalk)]/50 block mb-1.5">Correo</label>
           <input id="lockEmail" type="email" placeholder="tu@correo.com" autocomplete="username" class="w-full rounded-xl px-4 py-3 text-sm">
@@ -38,7 +49,9 @@
         </div>
         <p id="lockError" class="hidden text-center text-xs text-red-400 font-mono"></p>
         <button type="submit" id="lockSubmitBtn" class="w-full btn-primary font-display font-semibold py-3.5 rounded-full text-sm uppercase tracking-wider">Iniciar sesión</button>
+        <button type="button" id="lockEditConfigBtn" class="w-full text-center text-[11px] font-mono uppercase tracking-widest text-[var(--chalk)]/40 hover:text-accent">Cambiar conexión de Supabase</button>
       </form>
+
       <p class="text-center text-[10px] text-[var(--chalk)]/35 font-mono mt-5 leading-relaxed">
         ¿No tienes usuario todavía? Créalo en tu proyecto Supabase → Authentication → Users → Add user.
       </p>
@@ -277,8 +290,8 @@
 
   <div id="toast" class="toast fixed bottom-6 left-1/2 -translate-x-1/2 translate-y-24 opacity-0 z-[60] glass-strong rounded-full px-6 py-3 font-mono text-xs uppercase tracking-widest"></div>
 
-  <script src="js/store.js?v=3"></script>
-  <script src="js/render.js?v=3"></script>
+  <script src="js/store.js?v=4"></script>
+  <script src="js/render.js?v=4"></script>
   <script>
   (function(){
     "use strict";
@@ -292,18 +305,24 @@
     // ---------- LOCK SCREEN (Supabase Auth) ----------
     const lockScreen = document.getElementById("lockScreen");
     const panelRoot = document.getElementById("panelRoot");
+    const lockConfigForm = document.getElementById("lockConfigForm");
     const lockForm = document.getElementById("lockForm");
-    const lockNotConfigured = document.getElementById("lockNotConfigured");
     const lockError = document.getElementById("lockError");
     const lockSubmitBtn = document.getElementById("lockSubmitBtn");
+    const lockCfgStatus = document.getElementById("lockCfgStatus");
+    const lockCfgSubmitBtn = document.getElementById("lockCfgSubmitBtn");
 
-    function showLockScreen(){
-      lockScreen.classList.remove("hidden");
-      panelRoot.classList.add("hidden");
+    function refreshLockView(){
       const configured = S.isConfigured();
-      lockNotConfigured.classList.toggle("hidden", configured);
+      lockConfigForm.classList.toggle("hidden", configured);
       lockForm.classList.toggle("hidden", !configured);
+      if (configured){
+        const cfg = S.getConfig();
+        document.getElementById("lockCfgUrl").value = cfg.url;
+        document.getElementById("lockCfgKey").value = cfg.key;
+      }
     }
+    refreshLockView();
 
     function unlock(){
       lockScreen.classList.add("hidden");
@@ -311,16 +330,39 @@
       initPanel();
     }
 
-    document.getElementById("lockGotoConfig").addEventListener("click", (e) => {
-      e.preventDefault();
-      // No hay conexión todavía: mandamos directo a llenar el formulario mostrando el panel en modo config.
-      lockScreen.classList.add("hidden");
-      panelRoot.classList.remove("hidden");
-      initPanel();
-      switchTabGlobal("config");
+    document.getElementById("lockEditConfigBtn").addEventListener("click", () => {
+      lockConfigForm.classList.remove("hidden");
+      lockForm.classList.add("hidden");
+      lockCfgStatus.classList.add("hidden");
     });
 
-    let switchTabGlobal = () => {};
+    lockConfigForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const url = document.getElementById("lockCfgUrl").value.trim();
+      const key = document.getElementById("lockCfgKey").value.trim();
+      if (!url || !key){
+        lockCfgStatus.textContent = "Completa la URL y la API Key.";
+        lockCfgStatus.className = "text-center text-xs font-mono text-red-400";
+        lockCfgStatus.classList.remove("hidden");
+        return;
+      }
+      S.setConfig(url, key);
+      lockCfgStatus.textContent = "Probando conexión…";
+      lockCfgStatus.className = "text-center text-xs font-mono text-[var(--chalk)]/50";
+      lockCfgStatus.classList.remove("hidden");
+      lockCfgSubmitBtn.disabled = true;
+      try {
+        await S.testConnection();
+        lockCfgStatus.textContent = "✅ Conectado. Ahora inicia sesión.";
+        lockCfgStatus.className = "text-center text-xs font-mono text-[var(--accent)]";
+        refreshLockView();
+      } catch (err) {
+        lockCfgStatus.textContent = "❌ No se pudo conectar: " + err.message + ". Verifica que corriste supabase-setup.sql.";
+        lockCfgStatus.className = "text-center text-xs font-mono text-red-400";
+      } finally {
+        lockCfgSubmitBtn.disabled = false;
+      }
+    });
 
     lockForm.addEventListener("submit", async (e) => {
       e.preventDefault();
@@ -346,10 +388,8 @@
       }
     });
 
-    if (S.isAuthenticated()){
+    if (S.isConfigured() && S.isAuthenticated()){
       unlock();
-    } else {
-      showLockScreen();
     }
 
     function initPanel(){
@@ -364,7 +404,6 @@
         document.querySelectorAll(".admin-section").forEach(s => s.classList.toggle("active", s.id === "tab-" + tab));
         if (tab === "exportar") refreshExportPreview();
       }
-      switchTabGlobal = switchTab;
 
       // ---------- CONFIGURACIÓN ----------
       const cfg = S.getConfig();
